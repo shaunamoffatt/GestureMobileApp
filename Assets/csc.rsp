@@ -1,0 +1,4 @@
+-r:"Assets\Microsoft.System.Deployment.dll"
+-r:"Assets\Microsoft.VisualBasic.dll"
+-r:"Assets\PDollarGestureRecognizer.dll"
+-r:"Assets\WobbrockLib.dll"
