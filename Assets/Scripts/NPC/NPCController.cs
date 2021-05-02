@@ -41,8 +41,10 @@ public class NPCController : MonoBehaviour
         parentRB = GetComponent<Rigidbody>();
     }
 
+    [SerializeField] private float findNewPathTime = 10;
+    float timer = 10f;
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         model.transform.position = transform.position;
         ragdoll.transform.position = transform.position;
@@ -51,10 +53,16 @@ public class NPCController : MonoBehaviour
         {
             case State.Normal:
                 {
-                    if (agent.hasPath == false || agent.remainingDistance < 0.1f)
+                    if (!agent.isOnNavMesh)
+                    {
+                        EnableNavMeshAgent();
+                    }
+
+                    if (!agent.hasPath || agent.pathStatus == NavMeshPathStatus.PathComplete || agent.pathStatus == NavMeshPathStatus.PathPartial)
                     {
                         ChooseRandomPosition();
                     }
+                    timer -= Time.deltaTime;
                     break;
                 }
             case State.Flung:
@@ -68,7 +76,7 @@ public class NPCController : MonoBehaviour
                 {
 
                     //Keep the ragdolls rb with the held model
-                   // ragdoll.transform.position = transform.position;
+                    // ragdoll.transform.position = transform.position;
                     rb.transform.position = transform.position;
                     break;
                 }
@@ -78,19 +86,14 @@ public class NPCController : MonoBehaviour
 
     }
 
-    private float randomRange = 2f;
+    [SerializeField] float randomRange = 1;
     private void ChooseRandomPosition()
     {
-        float randomSpotx = transform.position.x + UnityEngine.Random.Range(-randomRange, +randomRange);
-        float randomSpotz = transform.position.z + UnityEngine.Random.Range(-randomRange, +randomRange);
-        if (agent.isOnNavMesh)
-        {
-            agent.SetDestination(new Vector3(randomSpotx, 0, randomSpotz));
-        }
-        else
-        {
-            EnableNavMeshAgent();
-        }
+        Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * randomRange;
+        randomDirection += transform.position;
+        NavMeshHit hit;
+        NavMesh.SamplePosition(randomDirection, out hit, randomRange, 1);
+            agent.SetDestination(hit.position);
     }
 
     private void CheckIfDead()
@@ -156,19 +159,12 @@ public class NPCController : MonoBehaviour
     {
         // Act as a ragDoll
         ToggleRagDoll(true);
-        // Dontuse gravity for the ragdoll while being flung 
-        //UseGravityRagdoll(false);
         // Add Flick Force
         if (rb != null)
         {
             this.velocity = velocity;
-
-            //parentRB.velocity = velocity;
-            //rb.AddForce(velocity, ForceMode.Impulse);
-            //rb.AddForce(Vector3.up * 30, ForceMode.Impulse);
             AddForceToRagDoll();
         }
-
         Debug.Log("VELOCITY**********************" + velocity);
         //Unparent from hand
         transform.parent = null;
@@ -199,9 +195,11 @@ public class NPCController : MonoBehaviour
     private void EnableNavMeshAgent()
     {
         agent.enabled = true;
+        agent.autoRepath = true;
         if (!agent.isOnNavMesh)
         {
-            agent.transform.position = transform.position;
+            float terrainY = Terrain.activeTerrain.SampleHeight(transform.position) + Terrain.activeTerrain.transform.position.y + 1;
+            agent.transform.position = transform.position + new Vector3(0, terrainY, 0);
             // Dont remember reasoning... nav mesh agent seem to work oddly-
             // I think something to do with getting it on the Navmesh
             agent.enabled = false;
@@ -261,10 +259,6 @@ public class NPCController : MonoBehaviour
         Rigidbody[] rigidbodies = ragdoll.GetComponentsInChildren<Rigidbody>();
         foreach (Rigidbody rigidbody in rigidbodies)
         {
-            //rigidbody.useGravity = true;
-            //rigidbody.AddForce(velocity, ForceMode.Impulse);
-            // rigidbody.useGravity = useGravity;
-            //rigidbody.velocity = velocity;
             StartCoroutine(ApplyForce(rigidbody));
         }
     }
@@ -296,7 +290,7 @@ public class NPCController : MonoBehaviour
     {
         if (other.GetComponent<Terrain>() != null)
         {
-           // UseGravityRagdoll(true);
+
         }
     }
 
