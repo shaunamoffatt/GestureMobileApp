@@ -144,6 +144,7 @@ public class HandController : MonoBehaviour
                     break;
                 }
             case 11://fireball
+            case 12://electricball
                 {
                     heldItem.GetComponent<ThrowableParticleController>().Throw(velocity);
                     break;
@@ -157,6 +158,7 @@ public class HandController : MonoBehaviour
         yield return StartCoroutine(ReturntoDefaultPosition());
         // Finally reset to Idle
         setState(HandState.Idle);
+        heldItem = null;
         yield break;
     }
 
