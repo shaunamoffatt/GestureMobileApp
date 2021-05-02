@@ -6,6 +6,7 @@ public enum HandState
 {
     Holding,
     Throwing,
+    Dropping,
     Pointing,
     Idle,
     Magic
@@ -49,7 +50,7 @@ public class HandController : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         cameraTransform = Camera.main.transform;
-        state = HandState.Idle;
+        setState(HandState.Idle);
     }
 
     void Update()
@@ -60,15 +61,14 @@ public class HandController : MonoBehaviour
 
     internal void DropItem(Vector3 dropPosition)
     {
-        state = HandState.Idle;
+        setState(HandState.Dropping);
         StartCoroutine("GrabORReleaseHeldItem", dropPosition);
-        heldItem = null;
     }
 
     internal void GrabItem(GameObject gameObject)
     {
+        setState(HandState.Holding);
         heldItem = gameObject;
-        state = HandState.Holding;
         StartCoroutine("GrabORReleaseHeldItem", heldItem.transform.position);
     }
 
@@ -89,7 +89,7 @@ public class HandController : MonoBehaviour
         {
             // move a little forward, release the item 
             //then move back
-            state = HandState.Throwing;
+            setState(HandState.Throwing);
             float terrainY = Terrain.activeTerrain.SampleHeight(transform.position) + Terrain.activeTerrain.transform.position.y + distanceFromGround;
             var hit = new RaycastHit();
             flickmovement = (transform.position + (Camera.main.transform.forward * 2));
@@ -106,13 +106,13 @@ public class HandController : MonoBehaviour
                 }
             }
             StartCoroutine("ThrowAndReleaseItem", velocity);
-            state = HandState.Idle;
         }
+        
     }
 
     internal void StartPointing(Vector2 screenPosition)
     {
-        state = HandState.Pointing;
+        setState(HandState.Pointing);
         anim.SetBool("pointing", true);
         Vector3 location = new Vector3(screenPosition.x, screenPosition.y, HandGestureUtils.handOffset().z);
         location = Camera.main.ScreenToWorldPoint(location);
@@ -147,16 +147,17 @@ public class HandController : MonoBehaviour
             case 11://fireball
                 {
                     heldItem.GetComponent<ThrowableParticleController>().Throw(velocity);
-
                     break;
                 }
         }
-        heldItem = null;
+       
         //Play the releasing animation as The State is no longer holding
         yield return StartCoroutine(PlayGrabORReleaseAnimation());
         //Return to original pos
         //return to proper camera offset
         yield return StartCoroutine(ReturntoDefaultPosition());
+        // Finally reset to Idle
+        setState(HandState.Idle);
         yield break;
     }
 
@@ -188,8 +189,7 @@ public class HandController : MonoBehaviour
     private void LoadSpell(GameObject prefab, Vector3 offset)
     {
         // State is Magic
-        state = HandState.Magic;
-
+        setState(HandState.Magic);
         // if the layer is less then 10 its not an object
         if (heldItem != null)
             Destroy(heldItem);
@@ -204,7 +204,7 @@ public class HandController : MonoBehaviour
 
     IEnumerator MoveToPoint(Vector3 location)
     {
-        //Move to position of the item (to pick up or drop)
+        //Move to position 
         float duration = (Vector3.Distance(transform.position, location)) / HandGestureUtils.cameraMoveSpeed();
         float delta = 0;
         float distanceX = Math.Abs(transform.position.x - location.x);
@@ -236,19 +236,23 @@ public class HandController : MonoBehaviour
     //Picks up or places the item
     void DropOrPickUp()
     {
-        if(heldItem != null)
-        switch (heldItem.layer)
-        {
-            case 9://person
-                {
-                    //Then pick up person if the state is in Holding
-                    if (state == HandState.Holding)
-                        heldItem.GetComponent<NPCController>().PickUp();
-                    else
-                        heldItem.GetComponent<NPCController>().Drop();
-                    break;
-                }
-        }
+            switch (heldItem.layer)
+            {
+                case 9://person
+                    {
+                        //Then pick up person if the state is in Holding
+                        if (state == HandState.Holding)
+                            heldItem.GetComponent<NPCController>().PickUp();
+                        else
+                        {
+                            heldItem.GetComponent<NPCController>().Drop();
+                            // Finally reset to Idle
+                            setState(HandState.Idle);
+                            heldItem = null;
+                        }
+                        break;
+                    }
+            }
     }
 
     IEnumerator ReturntoDefaultPosition()
