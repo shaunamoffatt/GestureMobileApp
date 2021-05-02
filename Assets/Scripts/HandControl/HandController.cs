@@ -102,7 +102,6 @@ public class HandController : MonoBehaviour
                     Vector3 p = new Vector3(transform.position.x, transform.position.y - terrainY, transform.position.z);
                     //  Set flick movement to be the current pos (no flick will show) - terrains y pos
                     flickmovement = p;
-                    return;
                 }
             }
             StartCoroutine("ThrowAndReleaseItem", velocity);

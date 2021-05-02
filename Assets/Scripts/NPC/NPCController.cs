@@ -14,11 +14,8 @@ public class NPCController : MonoBehaviour
     private Rigidbody rb;
     // deathParticle
     [SerializeField] GameObject deathParticle;
-    //used to count 
-    int stoppedRBCount = 0;
+
     private int health = 100;
-    // test
-    private Rigidbody parentRB;
 
     enum State
     {
@@ -38,11 +35,8 @@ public class NPCController : MonoBehaviour
             Debug.LogError("NPC has no deathParticle");
         }
         EnableNavMeshAgent();
-        parentRB = GetComponent<Rigidbody>();
     }
 
-    [SerializeField] private float findNewPathTime = 10;
-    float timer = 10f;
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -57,24 +51,27 @@ public class NPCController : MonoBehaviour
                     {
                         EnableNavMeshAgent();
                     }
-
-                    if (!agent.hasPath || agent.pathStatus == NavMeshPathStatus.PathComplete || agent.pathStatus == NavMeshPathStatus.PathPartial)
+                    else if (!agent.hasPath || agent.pathStatus == NavMeshPathStatus.PathComplete || agent.pathStatus == NavMeshPathStatus.PathPartial)
                     {
                         ChooseRandomPosition();
                     }
-                    timer -= Time.deltaTime;
                     break;
                 }
             case State.Flung:
                 {
-                    transform.rotation = Quaternion.LookRotation(parentRB.velocity);
-                    // Check if on the ground stable
+                    // transform.rotation = Quaternion.LookRotation(parentRB.velocity);
+                    // SEt the position to follow the hips rigid body
+
+                    //float terrainY = Terrain.activeTerrain.SampleHeight(transform.position) + Terrain.activeTerrain.transform.position.y + 1;
+                    //if (rb.transform.position.y <= 10)
+                    //{
+                    // This should happen after the first rigid body gets some velocty
                     CheckIfStopped();
+                    // }
                     break;
                 }
             case State.Held:
                 {
-
                     //Keep the ragdolls rb with the held model
                     // ragdoll.transform.position = transform.position;
                     rb.transform.position = transform.position;
@@ -83,7 +80,6 @@ public class NPCController : MonoBehaviour
         }
 
         CheckIfDead();
-
     }
 
     [SerializeField] float randomRange = 1;
@@ -93,7 +89,7 @@ public class NPCController : MonoBehaviour
         randomDirection += transform.position;
         NavMeshHit hit;
         NavMesh.SamplePosition(randomDirection, out hit, randomRange, 1);
-            agent.SetDestination(hit.position);
+        agent.SetDestination(hit.position);
     }
 
     private void CheckIfDead()
@@ -109,17 +105,8 @@ public class NPCController : MonoBehaviour
 
     private void CheckIfStopped()
     {
-        stoppedRBCount = 0;
-        Rigidbody[] rigidbodies = ragdoll.GetComponentsInChildren<Rigidbody>();
-        foreach (Rigidbody rigidbody in rigidbodies)
-        {
-            if (rb.velocity.magnitude < 0.1f)// and colliding with the ground{
-            {
-                stoppedRBCount++;
-            }
-        }
-        // If more than 4 rigidbodies (ie one of the limbs) have stopped- rest the tika man
-        if (stoppedRBCount >= 4)
+        // if the hips have stopped moving
+        if (rb.velocity.magnitude < 0.01f)// and colliding with the ground{
         {
             state = State.Normal;
             //SEt the position to be where the rigidbody is
@@ -127,6 +114,7 @@ public class NPCController : MonoBehaviour
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             ToggleRagDoll(false);
+
         }
     }
 
@@ -170,7 +158,7 @@ public class NPCController : MonoBehaviour
         transform.parent = null;
         //Set the gravity to true so it falls
         // rb.useGravity = true;
-        state = State.Flung;
+
     }
 
     [ContextMenu("ToggleRagDoll")]
@@ -194,11 +182,12 @@ public class NPCController : MonoBehaviour
 
     private void EnableNavMeshAgent()
     {
+        float terrainY = Terrain.activeTerrain.SampleHeight(transform.position) + Terrain.activeTerrain.transform.position.y + 1;
         agent.enabled = true;
         agent.autoRepath = true;
         if (!agent.isOnNavMesh)
         {
-            float terrainY = Terrain.activeTerrain.SampleHeight(transform.position) + Terrain.activeTerrain.transform.position.y + 1;
+
             agent.transform.position = transform.position + new Vector3(0, terrainY, 0);
             // Dont remember reasoning... nav mesh agent seem to work oddly-
             // I think something to do with getting it on the Navmesh
@@ -261,6 +250,7 @@ public class NPCController : MonoBehaviour
         {
             StartCoroutine(ApplyForce(rigidbody));
         }
+
     }
 
 
@@ -278,6 +268,11 @@ public class NPCController : MonoBehaviour
             // Forces always need to be applied at fixed frame rate!               
             yield return new WaitForFixedUpdate();
             time -= Time.deltaTime;
+        }
+        //Using the hips- check the rb is in motion and change state
+        if (body == rb && rb.velocity.magnitude > 0.1f)
+        {
+            state = State.Flung;
         }
     }
 
