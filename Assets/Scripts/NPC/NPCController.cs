@@ -17,6 +17,8 @@ public class NPCController : MonoBehaviour
     //used to count 
     int stoppedRBCount = 0;
     private int health = 100;
+    // test
+    private Rigidbody parentRB;
 
     enum State
     {
@@ -36,6 +38,7 @@ public class NPCController : MonoBehaviour
             Debug.LogError("NPC has no deathParticle");
         }
         EnableNavMeshAgent();
+        parentRB = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
@@ -49,27 +52,30 @@ public class NPCController : MonoBehaviour
             case State.Normal:
                 {
                     if (agent.hasPath == false || agent.remainingDistance < 0.1f)
-                      {
-                          ChooseRandomPosition();
-                     }
+                    {
+                        ChooseRandomPosition();
+                    }
                     break;
                 }
             case State.Flung:
                 {
+                    transform.rotation = Quaternion.LookRotation(parentRB.velocity);
                     // Check if on the ground stable
                     CheckIfStopped();
                     break;
                 }
             case State.Held:
                 {
+
                     //Keep the ragdolls rb with the held model
+                   // ragdoll.transform.position = transform.position;
                     rb.transform.position = transform.position;
                     break;
                 }
         }
 
         CheckIfDead();
-       
+
     }
 
     private float randomRange = 2f;
@@ -145,22 +151,29 @@ public class NPCController : MonoBehaviour
         transform.parent = null;
     }
 
+    Vector3 velocity;
     public void Throw(Vector3 velocity)
     {
         // Act as a ragDoll
         ToggleRagDoll(true);
+        // Dontuse gravity for the ragdoll while being flung 
+        //UseGravityRagdoll(false);
         // Add Flick Force
         if (rb != null)
         {
+            this.velocity = velocity;
+
+            //parentRB.velocity = velocity;
             //rb.AddForce(velocity, ForceMode.Impulse);
-            AddForceToRagDoll(velocity);
+            //rb.AddForce(Vector3.up * 30, ForceMode.Impulse);
+            AddForceToRagDoll();
         }
 
         Debug.Log("VELOCITY**********************" + velocity);
         //Unparent from hand
         transform.parent = null;
         //Set the gravity to true so it falls
-        rb.useGravity = true;
+        // rb.useGravity = true;
         state = State.Flung;
     }
 
@@ -241,20 +254,50 @@ public class NPCController : MonoBehaviour
         }
     }
 
+
     // Adds a force to all the limbs of the ragdoll
-    void AddForceToRagDoll(Vector3 velocity)
+    void AddForceToRagDoll()
     {
         Rigidbody[] rigidbodies = ragdoll.GetComponentsInChildren<Rigidbody>();
         foreach (Rigidbody rigidbody in rigidbodies)
         {
-            rigidbody.useGravity = true;
-            rigidbody.AddForce(velocity, ForceMode.Impulse);
+            //rigidbody.useGravity = true;
+            //rigidbody.AddForce(velocity, ForceMode.Impulse);
+            // rigidbody.useGravity = useGravity;
+            //rigidbody.velocity = velocity;
+            StartCoroutine(ApplyForce(rigidbody));
+        }
+    }
+
+
+    IEnumerator ApplyForce(Rigidbody body)
+    {
+        float time = 0.5f;
+        // Apply the force smoothly over time!
+        // Check if the rigid body we apply force to is still alive.
+        // In a real game situation it might have been hit by and explosion and was destroyed.
+        while (time > 0 && body != null)
+        {
+            body.AddForce(velocity, ForceMode.Impulse);
+
+            // Yields until the next fixed update frame.
+            // Forces always need to be applied at fixed frame rate!               
+            yield return new WaitForFixedUpdate();
+            time -= Time.deltaTime;
         }
     }
 
     private void Damage(int amount)
     {
         health -= amount;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.GetComponent<Terrain>() != null)
+        {
+           // UseGravityRagdoll(true);
+        }
     }
 
     void OnCollisionEnter(Collision collision)
@@ -266,7 +309,7 @@ public class NPCController : MonoBehaviour
     IEnumerator KillEnemy()
     {
         //Play death particles
-        Instantiate(deathParticle,transform);
+        Instantiate(deathParticle, transform);
         //Start RagDollEffect
         ToggleRagDoll(true);
         //Wait 5 secs before destroying

@@ -34,7 +34,7 @@ public class UniStrokeRecognizer : AbstractRecognizer
 
     public override void ReadXMLFile()
     {
-        FilePath = Application.streamingAssetsPath + "/Gestures/OneDollarXml";
+        FilePath = Directory.GetCurrentDirectory() + "\\Assets\\Gestures\\OneDollarXml";
         if (Directory.Exists(FilePath))
         {
             string[] files = GetFiles(FilePath, ".xml");

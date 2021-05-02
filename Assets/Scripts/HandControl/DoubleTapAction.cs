@@ -7,7 +7,6 @@ public class DoubleTapAction : MonoBehaviour
     public TapGesture doubleTapGesture;
     private Ray ray;
     private RaycastHit hit;
-    [SerializeField] float minGrabDistance = 40;
     public HandController hand;
     public float flickForce = 50;
 
@@ -28,13 +27,22 @@ public class DoubleTapAction : MonoBehaviour
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         hit = new RaycastHit();
         //Check if holding
-        if (hand.HoldingObject())
+        switch (hand.getState())
         {
-            DropItem();
-        }
-        else
-        {
-            TrytoPickUpItem();
+            case HandState.Holding:
+                {
+                    DropItem();
+                    break;
+                }
+            case HandState.Idle:
+                {
+                    TrytoPickUpItem();
+                    break;
+                }
+            case HandState.Magic:
+                {
+                    break;
+                }
         }
     }
 

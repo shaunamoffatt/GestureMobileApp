@@ -97,6 +97,8 @@ public class GestureRecognitionSwipe : MonoBehaviour
             {
                 string name = uniStroke.getActionName();
                 LoadSpell(name);
+                //Turn of Magic Screen
+                GetComponent<GestureActivationController>().ToggleActiveGestures();
             }
             else
             {

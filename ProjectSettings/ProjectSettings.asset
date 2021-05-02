@@ -686,10 +686,10 @@ PlayerSettings:
     33: UNITY_POST_PROCESSING_STACK_V2
   additionalCompilerArguments:
     14:
-    - -r:"Assets\Plugins\Microsoft.VisualBasic.dll"
-    - -r:"Assets\Plugins\Microsoft.System.Deployment.dll"
-    - -r:"Assets\Plugins\WobbrockLib.dll"
-    - -r:"Assets\Plugins\PDollarGestureRecognizer.dll"
+    - -r:"Assets\Plugins\Android\Microsoft.VisualBasic.dll"
+    - -r:"Assets\Plugins\Android\Microsoft.System.Deployment.dll"
+    - -r:"Assets\Plugins\Android\WobbrockLib.dll"
+    - -r:"Assets\Plugins\Android\PDollarGestureRecognizer.dll"
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}
@@ -764,7 +764,7 @@ PlayerSettings:
   XboxOneOverrideIdentityPublisher: 
   vrEditorSettings: {}
   cloudServicesEnabled:
-    Analytics: 0
+    Analytics: 1
     Build: 0
     Collab: 0
     Game Performance: 0

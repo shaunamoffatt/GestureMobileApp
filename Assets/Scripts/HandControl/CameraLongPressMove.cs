@@ -13,7 +13,7 @@ public class CameraLongPressMove : MonoBehaviour
     Ray ray;
     RaycastHit hit;
     bool moveToPoint = false;
-    [SerializeField] private float distanceToTarget = 20;
+    [SerializeField] private float distanceToTarget = 5;
 
     private void Awake()
     {

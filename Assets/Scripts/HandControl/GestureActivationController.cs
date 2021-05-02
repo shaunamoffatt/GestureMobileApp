@@ -49,7 +49,8 @@ public class GestureActivationController : MonoBehaviour
             //Theses last 2 will be disabled when the other four are enabled (toggled)
             components.Add(HandGestureControl.GetComponent<SwipeTrail>());
             components.Add(HandGestureControl.GetComponent<GestureRecognitionSwipe>());
-        }catch
+        }
+        catch
         {
             Debug.LogWarning("Seems to be no Gesture Control components set yet");
         }
@@ -57,32 +58,38 @@ public class GestureActivationController : MonoBehaviour
 
     public void ToggleActiveGestures()
     {
-        //Only allow to use magic when not holding something
-        if (!hand.HoldingObject())
+        switch (hand.getState())
         {
-            foreach (MonoBehaviour c in components)
-            {
-                c.enabled = !c.enabled;
-            }
-            //Toggle magic
-            magic = !magic;
+            case HandState.Holding:
+                {
+                    //Drop what you are holding at the hands location
+                    hand.DropItem(Camera.main.transform.position + HandGestureUtils.handOffset());
+                    break;
+                }
+            default://Only allow to use magic when not holding something or Idle
+                {
+                    foreach (MonoBehaviour c in components)
+                    {
+                        c.enabled = !c.enabled;
+                    }
 
-        }else
-        {
-            //Drop what you are holding at the hands location
-            hand.DropItem(Camera.main.transform.position + HandGestureUtils.handOffset());
+                    //Toggle magic
+                    magic = !magic;
+                  
+                    //Toggle the Magic Particles on the MagicCamera
+                    if (magic && particles != null)
+                        ActivateBorder();
+                    else
+                        DeactivateBorder();
+                    break;
+                }
         }
 
-        //Toggle the Magic Particles on the MagicCamera
-        if (magic && particles != null)
-            ActivateBorder();
-        else
-            DeactivateBorder();
     }
 
     void ActivateBorder()
     {
-        foreach(ParticleSystem p in particles)
+        foreach (ParticleSystem p in particles)
         {
             p.Play();
         }
