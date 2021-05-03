@@ -1,4 +1,4 @@
--r:"Assets\Plugins\Android\Microsoft.System.Deployment.dll"
+-r:"Assets\Plugins\Android\System.Deployment.dll"
 -r:"Assets\Plugins\Android\Microsoft.VisualBasic.dll"
 -r:"Assets\Plugins\Android\PDollarGestureRecognizer.dll"
 -r:"Assets\Plugins\Android\WobbrockLib.dll"

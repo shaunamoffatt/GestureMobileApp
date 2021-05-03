@@ -26,7 +26,9 @@ public class ThrowableParticleController : MonoBehaviour
         //Set the gravity to true so it falls
         rb.useGravity = true;
         rb.isKinematic = false;
-        rb.AddForce(velocity* particleForce, ForceMode.Impulse);
+        rb.AddForce(velocity * particleForce, ForceMode.Impulse);
+        //Turn on the trigger so it can damage the NPCs
+        GetComponent<SphereCollider>().isTrigger = true;
         thrown = true;
         // Play exit
     }
@@ -35,11 +37,11 @@ public class ThrowableParticleController : MonoBehaviour
     {
         if (thrown)
         {
-            if(timer >= lifeTime)
+            if (timer >= lifeTime)
             {
                 ParticleSystem[] particles = GetComponents<ParticleSystem>();
                 //play the end of the particle
-                foreach(ParticleSystem p in particles)
+                foreach (ParticleSystem p in particles)
                 {
                     p.Stop(true);
                     Destroy(p);

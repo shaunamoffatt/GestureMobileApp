@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using TouchScript.Gestures.TransformGestures;
-using UnityEngine;
-
-
 public abstract class AbstractRecognizer
 {
     protected string FilePath;

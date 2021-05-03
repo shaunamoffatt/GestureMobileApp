@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2162604680283360868}
   - component: {fileID: 2162604680272797548}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Point light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 2162604680283360872}
   - component: {fileID: 2162604680265009960}
   - component: {fileID: 2162604680264987272}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Flash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3678,7 +3678,7 @@ ParticleSystem:
   CollisionModule:
     enabled: 0
     serializedVersion: 4
-    type: 0
+    type: 1
     collisionMode: 0
     colliderForce: 0
     multiplyColliderForceByParticleSize: 0
@@ -3855,7 +3855,7 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 512
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
@@ -4930,7 +4930,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1.3
+  m_Radius: 2
   m_Center: {x: 0, y: -0.58, z: 0}
 --- !u!54 &6901888713464741845
 Rigidbody:
@@ -4947,7 +4947,7 @@ Rigidbody:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 3
 --- !u!114 &6753703368362719604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4960,6 +4960,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54b0689921639bc4cb3515ec2d46250c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  particleForce: 10
+  lifeTime: 20
 --- !u!1 &2162604680283460172
 GameObject:
   m_ObjectHideFlags: 0
@@ -4971,7 +4973,7 @@ GameObject:
   - component: {fileID: 2162604680283360876}
   - component: {fileID: 2162604680265009964}
   - component: {fileID: 2162604680264987276}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Smoke
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9643,7 +9645,7 @@ GameObject:
   - component: {fileID: 2162604680283360878}
   - component: {fileID: 2162604680265009966}
   - component: {fileID: 2162604680264987278}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Spark
   m_TagString: Untagged
   m_Icon: {fileID: 0}

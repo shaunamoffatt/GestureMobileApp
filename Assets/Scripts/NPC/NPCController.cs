@@ -16,13 +16,18 @@ public class NPCController : MonoBehaviour
     // deathParticle
     [SerializeField] GameObject deathParticle;
 
-    private int health = 100;
+
+    public BillboardHealth healthBar;
+    private const int MaxHealth = 100;
+    private int health;
 
     enum State
     {
         Held,
         Normal,
-        Flung
+        Flung,
+        Fire,
+        Electric
 
     }
     private State state = State.Normal;
@@ -36,6 +41,12 @@ public class NPCController : MonoBehaviour
             Debug.LogError("NPC has no deathParticle");
         }
         EnableNavMeshAgent();
+    }
+
+    private void Start()
+    {
+        health = MaxHealth;
+        healthBar.SetMaxHealth(MaxHealth);
     }
 
     // Update is called once per frame
@@ -60,12 +71,8 @@ public class NPCController : MonoBehaviour
                 }
             case State.Flung:
                 {
-                    // transform.rotation = Quaternion.LookRotation(parentRB.velocity);
-                    // SEt the position to follow the hips rigid body
-
-                    //float terrainY = Terrain.activeTerrain.SampleHeight(transform.position) + Terrain.activeTerrain.transform.position.y + 1;
-                    //if (rb.transform.position.y <= 10)
-                    //{
+                    // Move the health bar with the rb position
+                    healthBar.SetHealthBarPosition(rb.position);
                     // This should happen after the first rigid body gets some velocty
                     CheckIfStopped();
                     // }
@@ -171,6 +178,8 @@ public class NPCController : MonoBehaviour
             ragdoll.gameObject.SetActive(true);
             model.gameObject.SetActive(false);
             agent.enabled = false;
+            //Take 10 Damage every time ragdoll is enabled
+            //Damage(10);
         }
         else
         {
@@ -280,14 +289,7 @@ public class NPCController : MonoBehaviour
     private void Damage(int amount)
     {
         health -= amount;
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.GetComponent<Terrain>() != null)
-        {
-
-        }
+        healthBar.SetHealth(health);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -305,5 +307,29 @@ public class NPCController : MonoBehaviour
         //Wait 5 secs before destroying
         yield return new WaitForSecondsRealtime(5f);
         Destroy(gameObject);
+    }
+
+    bool AllowDamage = true;
+    private void OnTriggerEnter(Collider other)
+    {
+        if (AllowDamage)
+            switch (other.gameObject.layer)
+            {
+                case 11://fire{
+                    {
+                        state = State.Fire;
+                        AllowDamage = false;
+                        Damage(25);
+                        break;
+                    }
+                case 12://electric
+                    {
+                        Damage(25);
+                        AllowDamage = false;
+                        state = State.Electric;
+                        break;
+                    }
+            }
+
     }
 }
